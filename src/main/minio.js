@@ -114,6 +114,7 @@ export class Client {
     this.transport = transport
     this.host = host
     this.port = port
+    this.dnsLookup = !!params.dnsLookup
     this.protocol = protocol
     this.accessKey = params.accessKey
     this.secretKey = params.secretKey
@@ -164,9 +165,7 @@ export class Client {
     // Verify if virtual host supported.
     var virtualHostStyle
     if (bucketName) {
-      virtualHostStyle = isVirtualHostStyle(this.host,
-                                            this.protocol,
-                                            bucketName)
+      virtualHostStyle = this.dnsLookup       //isVirtualHostStyle(this.host,  this.protocol,    bucketName)
     }
 
     if (this.port) reqOptions.port = this.port
@@ -430,6 +429,8 @@ export class Client {
 
   // gets the region of the bucket
   getBucketRegion(bucketName, cb) {
+      // cb(null,"oss-cn-beijing")
+      // return;
     if (!isValidBucketName(bucketName)) {
       throw new errors.InvalidBucketNameError(`Invalid bucket name : ${bucketName}`)
     }
@@ -443,7 +444,7 @@ export class Client {
     if (this.regionMap[bucketName]) return cb(null, this.regionMap[bucketName])
     var extractRegion = (response) => {
       var transformer = transformers.getBucketRegionTransformer()
-      var region = 'us-east-1'
+      var region = 'oss-cn-beijing'
       pipesetup(response, transformer)
         .on('error', cb)
         .on('data', data => {
@@ -470,7 +471,7 @@ export class Client {
     //   this region is proper we retry the same request with the newly
     //   obtained region.
     var pathStyle = typeof window === 'undefined'
-    this.makeRequest({method, bucketName, query, pathStyle}, '', 200, 'us-east-1', true, (e, response) => {
+    this.makeRequest({method, bucketName, query, pathStyle}, '', 200, 'oss-cn-beijing', true, (e, response) => {
       if (e) {
         if (e.name === 'AuthorizationHeaderMalformed') {
           var region = e.Region

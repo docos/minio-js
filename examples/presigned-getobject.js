@@ -23,7 +23,9 @@ var s3Client = new Minio.Client({
   endPoint: 's3.amazonaws.com',
   accessKey: 'YOUR-ACCESSKEYID',
   secretKey: 'YOUR-SECRETACCESSKEY',
-  useSSL: true // Default is true.
+  useSSL: true, // Default is true.
+    region:"oss-cn-beijing",
+    dnsLookup:true
 })
 
 // Presigned get object URL for my-objectname at my-bucketname, it expires in 7 days by default.

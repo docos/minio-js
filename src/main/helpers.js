@@ -95,6 +95,7 @@ export function isAmazonEndpoint(endpoint) {
 // limitation. For all other buckets and Amazon S3 endpoint we will
 // default to virtual host style.
 export function isVirtualHostStyle(endpoint, protocol, bucket) {
+    return true;
   if (protocol === 'https:' && bucket.indexOf('.') > -1) {
     return false
   }
