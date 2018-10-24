@@ -1,5 +1,5 @@
 {
-  "name": "minio",
+  "name": "docs.minio",
   "version": "7.0.2",
   "description": "S3 Compatible Cloud Storage client",
   "main": "./dist/main/minio.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/minio/minio-js.git"
+    "url": "git+https://github.com/docos/minio-js.git"
   },
   "author": {
     "name": "Minio, Inc.",
