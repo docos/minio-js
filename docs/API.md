@@ -1,14 +1,14 @@
-# JavaScript Client API Reference [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
+# JavaScript Client API Reference [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
-## Initialize Minio Client object.
+## Initialize MinIO Client object.
 
-## Minio
+## MinIO
 
 ```js
 var Minio = require('minio')
 
 var minioClient = new Minio.Client({
-    endPoint: 'play.minio.io',
+    endPoint: 'play.min.io',
     port: 9000,
     useSSL: true,
     accessKey: 'Q3AM3UQ867SPQQA43P2F',
@@ -45,11 +45,11 @@ var s3Client = new Minio.Client({
 ## 1.  Constructor
 
 <a name="MinioClient_endpoint"></a>
-###  new Minio.Client ({endPoint, port, useSSL, accessKey, secretKey})
+###  new Minio.Client ({endPoint, port, useSSL, accessKey, secretKey, region, transport, sessionToken, partSize})
 
 |     |
 | ---- |
-|``new Minio.Client ({endPoint, port, useSSL, accessKey, secretKey})``|
+|``new Minio.Client ({endPoint, port, useSSL, accessKey, secretKey, region, transport, sessionToken, partSize})``|
 |Initializes a new client object.|
 
 __Parameters__
@@ -64,17 +64,18 @@ __Parameters__
 |`region`    | _string_  |Set this value to override region cache. (Optional)|
 |`transport`    | _string_  |Set this value to pass in a custom transport. (Optional)|
 |`sessionToken`    | _string_  |Set this value to provide x-amz-security-token (AWS S3 specific). (Optional)|
+|`partSize`    | _number_  |Set this value to override default part size of 64MB for multipart uploads. (Optional)|
 
 
 __Example__
 
-## Create client for Minio
+## Create client for MinIO
 
 ```js
 var Minio = require('minio')
 
 var minioClient = new Minio.Client({
-    endPoint: 'play.minio.io',
+    endPoint: 'play.min.io',
     port: 9000,
     useSSL: true,
     accessKey: 'Q3AM3UQ867SPQQA43P2F',
@@ -155,7 +156,7 @@ minioClient.listBuckets(function(err, buckets) {
 ```
 
 <a name="bucketExists"></a>
-#### bucketExists(bucketName, callback)
+#### bucketExists(bucketName[, callback])
 
 Checks if a bucket exists.
 
@@ -166,7 +167,7 @@ __Parameters__
 | Param  | Type  | Description  |
 |---|---|---|
 | `bucketName`  |  _string_ | Name of the bucket.  |
-| `callback(err, exists)`  | _function_  | `exists` is a boolean which indicates whether `bucketName` exists or not. `err` is set when an error occurs during the operation. |
+| `callback(err, exists)`  | _function_  | `exists` is a boolean which indicates whether `bucketName` exists or not. `err` is set when an error occurs during the operation. If no callback is passed, a `Promise` is returned. |
 
 __Example__
 
@@ -247,7 +248,7 @@ stream.on('error', function(err) { console.log(err) } )
 ```
 
 <a name="listObjectsV2"></a>
-### listObjectsV2(bucketName, prefix, recursive)
+### listObjectsV2(bucketName, prefix, recursive, startAfter)
 
 Lists all objects in a bucket using S3 listing objects V2 API
 
@@ -259,6 +260,7 @@ __Parameters__
 | `bucketName` | _string_ | Name of the bucket. |
 | `prefix`  | _string_  |  The prefix of the objects that should be listed (optional, default `''`). |
 | `recursive`  | _bool_  | `true` indicates recursive style listing and `false` indicates directory style listing delimited by '/'. (optional, default `false`).  |
+| `startAfter`  | _string_  |  Specifies the object name to start after when listing objects in a bucket. (optional, default `''`). |
 
 
 __Return Value__
@@ -282,11 +284,53 @@ __Example__
 
 
 ```js
-var stream = minioClient.listObjectsV2('mybucket','', true)
+var stream = minioClient.listObjectsV2('mybucket','', true,'')
 stream.on('data', function(obj) { console.log(obj) } )
 stream.on('error', function(err) { console.log(err) } )
 ```
 
+<a name="listObjectsV2WithMetadata"></a>
+### listObjectsV2WithMetadata(bucketName, prefix, recursive, startAfter)
+
+Lists all objects and their metadata in a bucket using S3 listing objects V2 API
+
+__Parameters__
+
+
+| Param | Type | Description |
+| ---- | ---- | ---- |
+| `bucketName` | _string_ | Name of the bucket. |
+| `prefix`  | _string_  |  The prefix of the objects that should be listed (optional, default `''`). |
+| `recursive`  | _bool_  | `true` indicates recursive style listing and `false` indicates directory style listing delimited by '/'. (optional, default `false`).  |
+| `startAfter`  | _string_  |  Specifies the object name to start after when listing objects in a bucket. (optional, default `''`). |
+
+
+__Return Value__
+
+| Param | Type | Description |
+| ---- | ---- | ---- |
+| `stream` | _Stream_ | Stream emitting the objects in the bucket. |
+
+The object is of the format:
+
+| Param | Type | Description |
+| ---- | ---- | ---- |
+| `obj.name` | _string_ | name of the object. |
+| `obj.prefix` | _string_ | name of the object prefix. |
+| `obj.size` | _number_ | size of the object. |
+| `obj.etag` | _string_ |etag of the object. |
+| `obj.lastModified` | _Date_ | modified time stamp. |
+| `obj.metadata` | _object_ | metadata of the object. |
+
+
+__Example__
+
+
+```js
+var stream = minioClient.extensions.listObjectsV2WithMetadata('mybucket','', true,'')
+stream.on('data', function(obj) { console.log(obj) } )
+stream.on('error', function(err) { console.log(err) } )
+```
 
 <a name="listIncompleteUploads"></a>
 ### listIncompleteUploads(bucketName, prefix, recursive)
@@ -456,7 +500,7 @@ __Parameters__
 
 __Example__
 
-The maximum size of a single object is limited to 5TB. putObject transparently uploads objects larger than 5MiB in multiple parts. This allows failed uploads to resume safely by only uploading the missing parts. Uploaded data is carefully verified using MD5SUM signatures.
+The maximum size of a single object is limited to 5TB. putObject transparently uploads objects larger than 64MiB in multiple parts. Uploaded data is carefully verified using MD5SUM signatures.
 
 ```js
 var Fs = require('fs')
@@ -514,7 +558,7 @@ __Parameters__
 __Example__
 
 
-The maximum size of a single object is limited to 5TB. fPutObject transparently uploads objects larger than 5MiB in multiple parts. This allows failed uploads to resume safely by only uploading the missing parts. Uploaded data is carefully verified using MD5SUM signatures.
+The maximum size of a single object is limited to 5TB. fPutObject transparently uploads objects larger than 64MiB in multiple parts. Uploaded data is carefully verified using MD5SUM signatures.
 
 ```js
 var file = '/tmp/40mbfile'
@@ -702,7 +746,7 @@ minioClient.removeIncompleteUpload('mybucket', 'photo.jpg', function(err) {
 Presigned URLs are generated for temporary download/upload access to private objects.
 
 <a name="presignedUrl"></a>
-### presignedUrl(httpMethod, bucketName, objectName, expiry[, reqParams, cb])
+### presignedUrl(httpMethod, bucketName, objectName[, expiry, reqParams, requestDate, cb])
 
 Generates a presigned URL for the provided HTTP method, 'httpMethod'. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which the URL is no longer valid. The default value is 7 days.
 
@@ -715,8 +759,9 @@ __Parameters__
 |---|---|---|
 |`bucketName` | _string_ | Name of the bucket. |
 |`objectName` | _string_ | Name of the object. |
-|`expiry`     | _number_ | Expiry time in seconds. Default value is 7 days. |
-|`reqParams`  | _object_ | request parameters. |
+|`expiry`     | _number_ | Expiry time in seconds. Default value is 7 days. (optional) |
+|`reqParams`  | _object_ | request parameters. (optional) |
+|`requestDate`  | _Date_ | A date object, the url will be issued at. Default value is now. (optional) |
 |`callback(err, presignedUrl)` | _function_ | Callback function is called with non `null` err value in case of error. `presignedUrl` will be the URL using which the object can be downloaded using GET request. If no callback is passed, a `Promise` is returned. |
 
 
@@ -747,7 +792,7 @@ minioClient.presignedUrl('GET', 'mybucket', '', 1000, {'prefix': 'data', 'max-ke
 ```
 
 <a name="presignedGetObject"></a>
-### presignedGetObject(bucketName, objectName, expiry[, cb])
+### presignedGetObject(bucketName, objectName[, expiry, respHeaders, requestDate, cb])
 
 Generates a presigned URL for HTTP GET operations. Browsers/Mobile clients may point to this URL to directly download objects even if the bucket is private. This presigned URL can have an associated expiration time in seconds after which the URL is no longer valid. The default value is 7 days.
 
@@ -760,7 +805,9 @@ __Parameters__
 |---|---|---|
 |`bucketName` | _string_ | Name of the bucket. |
 |`objectName` | _string_ | Name of the object. |
-|`expiry`     | _number_ | Expiry time in seconds. Default value is 7 days. |
+|`expiry`     | _number_ | Expiry time in seconds. Default value is 7 days. (optional) |
+|`respHeaders`  | _object_ | response headers to override (optional) |
+|`requestDate`  | _Date_ | A date object, the url will be issued at. Default value is now. (optional) |
 |`callback(err, presignedUrl)` | _function_ | Callback function is called with non `null` err value in case of error. `presignedUrl` will be the URL using which the object can be downloaded using GET request. If no callback is passed, a `Promise` is returned. |
 
 
@@ -926,16 +973,16 @@ __Example__
 // Create a new notification object
 var bucketNotification = new Minio.NotificationConfig();
 
-// Setup a new topic configuration
-var arn = Minio.buildARN('aws', 'sns', 'us-west-2', '408065449417', 'TestTopic')
-var topic = new Minio.TopicConfig(arn)
-topic.addFilterSuffix('.jpg')
-topic.addFilterPrefix('myphotos/')
-topic.addEvent(Minio.ObjectReducedRedundancyLostObject)
-topic.addEvent(Minio.ObjectCreatedAll)
+// Setup a new Queue configuration
+var arn = Minio.buildARN('aws', 'sqs', 'us-west-2', '1', 'webhook')
+var queue = new Minio.QueueConfig(arn)
+queue.addFilterSuffix('.jpg')
+queue.addFilterPrefix('myphotos/')
+queue.addEvent(Minio.ObjectReducedRedundancyLostObject)
+queue.addEvent(Minio.ObjectCreatedAll)
 
-// Add the topic to the overall notification object
-bucketNotification.add(topic)
+// Add the queue to the overall notification object
+bucketNotification.add(queue)
 
 minioClient.setBucketNotification('mybucket', bucketNotification, function(err) {
   if (err) return console.log(err)
@@ -971,8 +1018,8 @@ minioClient.removeAllBucketNotification('my-bucketname', function(e) {
 
 Listen for notifications on a bucket. Additionally one can provider
 filters for prefix, suffix and events. There is no prior set bucket notification
-needed to use this API. This is an Minio extension API where unique identifiers
-are regitered and unregistered by the server automatically based on incoming requests.
+needed to use this API. This is an MinIO extension API where unique identifiers
+are registered and unregistered by the server automatically based on incoming requests.
 
 Returns an `EventEmitter`, which will emit a `notification` event carrying the record.
 
@@ -1011,7 +1058,7 @@ __Parameters__
 | Param  |  Type | Description  |
 |---|---|---|
 | `bucketName`  | _string_  | Name of the bucket |
-| `callback(err, policy)`  | _function_  | Callback function is called with non `null` err value in case of error. `policy` is the [bucket policy](https://github.com/minio/minio/blob/master/docs/bucket/policy/README.md). If no callback is passed, a `Promise` is returned. |
+| `callback(err, policy)`  | _function_  | Callback function is called with non `null` err value in case of error. `policy` is [bucket policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html). If no callback is passed, a `Promise` is returned. |
 
 
 ```js
@@ -1026,7 +1073,7 @@ minioClient.getBucketPolicy('my-bucketname', function(err, policy) {
 <a name="setBucketPolicy"></a>
 ### setBucketPolicy(bucketName, bucketPolicy[, callback])
 
-Set the bucket policy on the specified bucket. [bucketPolicy](https://github.com/minio/minio/blob/master/docs/bucket/policy/README.md) is detailed here.
+Set the bucket policy on the specified bucket. [bucketPolicy](https://docs.aws.amazon.com/AmazonS3/latest/dev/example-bucket-policies.html) is detailed here.
 
 __Parameters__
 
@@ -1050,7 +1097,7 @@ minioClient.setBucketPolicy('my-bucketname', JSON.stringify(policy), function(er
 ## 6. HTTP request options
 ### setRequestOptions(options)
 
-Set the HTTP/HTTPS request options. Supported options are `agent` ([http.Agent()](https://nodejs.org/api/http.html#http_class_http_agent)) and tls related options ('agent', 'ca', 'cert', 'ciphers', 'clientCertEngine', 'crl', 'dhparam', 'ecdhCurve', 'honorCipherOrder', 'key', 'passphrase', 'pfx', 'rejectUnauthorized', 'secureOptions', 'secureProtocol', 'servername', 'sessionIdContext') documented [here](https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options)
+Set the HTTP/HTTPS request options. Supported options are `agent` ([http.Agent()](https://nodejs.org/api/http.html#http_class_http_agent)), `family` ([IP address family to use while resolving `host` or `hostname`](https://nodejs.org/api/http.html#http_http_request_url_options_callback)), and tls related options ('agent', 'ca', 'cert', 'ciphers', 'clientCertEngine', 'crl', 'dhparam', 'ecdhCurve', 'honorCipherOrder', 'key', 'passphrase', 'pfx', 'rejectUnauthorized', 'secureOptions', 'secureProtocol', 'servername', 'sessionIdContext') documented [here](https://nodejs.org/api/tls.html#tls_tls_createsecurecontext_options)
 
 ```js
 // Do not reject self signed certificates.
@@ -1061,4 +1108,4 @@ minioClient.setRequestOptions({rejectUnauthorized: false})
 ## 7. Explore Further
 
 
-- [Build your own Shopping App Example](https://docs.minio.io/docs/javascript-shopping-app)
+- [Build your own Shopping App Example](https://github.com/minio/minio-js-store-app)

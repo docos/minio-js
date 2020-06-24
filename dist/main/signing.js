@@ -1,5 +1,28 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.postPresignSignatureV4 = postPresignSignatureV4;
+exports.signV4 = signV4;
+exports.presignSignatureV4 = presignSignatureV4;
+
+var _crypto = _interopRequireDefault(require("crypto"));
+
+var _lodash = _interopRequireDefault(require("lodash"));
+
+var _helpers = require("./helpers.js");
+
+var errors = _interopRequireWildcard(require("./errors.js"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 /*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,37 +36,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-  value: true
-});
-exports.postPresignSignatureV4 = postPresignSignatureV4;
-exports.signV4 = signV4;
-exports.presignSignatureV4 = presignSignatureV4;
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _crypto = require('crypto');
-
-var _crypto2 = _interopRequireDefault(_crypto);
-
-var _lodash = require('lodash');
-
-var _lodash2 = _interopRequireDefault(_lodash);
-
-var _helpersJs = require('./helpers.js');
-
-var _errorsJs = require('./errors.js');
-
-var errors = _interopRequireWildcard(_errorsJs);
-
-var signV4Algorithm = 'AWS4-HMAC-SHA256';
-
-// getCanonicalRequest generate a canonical request of style.
+var signV4Algorithm = 'AWS4-HMAC-SHA256'; // getCanonicalRequest generate a canonical request of style.
 //
 // canonicalRequest =
 //  <HTTPMethod>\n
@@ -53,27 +46,32 @@ var signV4Algorithm = 'AWS4-HMAC-SHA256';
 //  <SignedHeaders>\n
 //  <HashedPayload>
 //
+
 function getCanonicalRequest(method, path, headers, signedHeaders, hashedPayload) {
-  if (!(0, _helpersJs.isString)(method)) {
+  if (!(0, _helpers.isString)(method)) {
     throw new TypeError('method should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(path)) {
+
+  if (!(0, _helpers.isString)(path)) {
     throw new TypeError('path should be of type "string"');
   }
-  if (!(0, _helpersJs.isObject)(headers)) {
+
+  if (!(0, _helpers.isObject)(headers)) {
     throw new TypeError('headers should be of type "object"');
   }
-  if (!(0, _helpersJs.isArray)(signedHeaders)) {
+
+  if (!(0, _helpers.isArray)(signedHeaders)) {
     throw new TypeError('signedHeaders should be of type "array"');
   }
-  if (!(0, _helpersJs.isString)(hashedPayload)) {
+
+  if (!(0, _helpers.isString)(hashedPayload)) {
     throw new TypeError('hashedPayload should be of type "string"');
   }
+
   var headersArray = signedHeaders.reduce(function (acc, i) {
-    acc.push(i.toLowerCase() + ':' + headers[i]);
+    acc.push(`${i.toLowerCase()}:${headers[i]}`);
     return acc;
   }, []);
-
   var requestResource = path.split('?')[0];
   var requestQuery = path.split('?')[1];
   if (!requestQuery) requestQuery = '';
@@ -92,28 +90,30 @@ function getCanonicalRequest(method, path, headers, signedHeaders, hashedPayload
   canonical.push(signedHeaders.join(';').toLowerCase());
   canonical.push(hashedPayload);
   return canonical.join('\n');
-}
+} // generate a credential string
 
-// generate a credential string
+
 function getCredential(accessKey, region, requestDate) {
-  if (!(0, _helpersJs.isString)(accessKey)) {
+  if (!(0, _helpers.isString)(accessKey)) {
     throw new TypeError('accessKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(region)) {
+
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
-  if (!(0, _helpersJs.isObject)(requestDate)) {
+
+  if (!(0, _helpers.isObject)(requestDate)) {
     throw new TypeError('requestDate should be of type "object"');
   }
-  return accessKey + '/' + (0, _helpersJs.getScope)(region, requestDate);
-}
 
-// Returns signed headers array - alphabetically sorted
+  return `${accessKey}/${(0, _helpers.getScope)(region, requestDate)}`;
+} // Returns signed headers array - alphabetically sorted
+
+
 function getSignedHeaders(headers) {
-  if (!(0, _helpersJs.isObject)(headers)) {
+  if (!(0, _helpers.isObject)(headers)) {
     throw new TypeError('request should be of type "object"');
-  }
-  // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
+  } // Excerpts from @lsegal - https://github.com/aws/aws-sdk-js/issues/659#issuecomment-120477258
   //
   //  User-Agent:
   //
@@ -140,154 +140,178 @@ function getSignedHeaders(headers) {
   //
   //      Is skipped for obvious reasons
 
+
   var ignoredHeaders = ['authorization', 'content-length', 'content-type', 'user-agent'];
-  return _lodash2['default'].map(headers, function (v, header) {
+  return _lodash.default.map(headers, function (v, header) {
     return header;
   }).filter(function (header) {
     return ignoredHeaders.indexOf(header) === -1;
   }).sort();
-}
+} // returns the key used for calculating signature
 
-// returns the key used for calculating signature
+
 function getSigningKey(date, region, secretKey) {
-  if (!(0, _helpersJs.isObject)(date)) {
+  if (!(0, _helpers.isObject)(date)) {
     throw new TypeError('date should be of type "object"');
   }
-  if (!(0, _helpersJs.isString)(region)) {
+
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(secretKey)) {
+
+  if (!(0, _helpers.isString)(secretKey)) {
     throw new TypeError('secretKey should be of type "string"');
   }
-  var dateLine = (0, _helpersJs.makeDateShort)(date),
-      hmac1 = _crypto2['default'].createHmac('sha256', 'AWS4' + secretKey).update(dateLine).digest(),
-      hmac2 = _crypto2['default'].createHmac('sha256', hmac1).update(region).digest(),
-      hmac3 = _crypto2['default'].createHmac('sha256', hmac2).update('s3').digest();
-  return _crypto2['default'].createHmac('sha256', hmac3).update('aws4_request').digest();
-}
 
-// returns the string that needs to be signed
+  var dateLine = (0, _helpers.makeDateShort)(date),
+      hmac1 = _crypto.default.createHmac('sha256', 'AWS4' + secretKey).update(dateLine).digest(),
+      hmac2 = _crypto.default.createHmac('sha256', hmac1).update(region).digest(),
+      hmac3 = _crypto.default.createHmac('sha256', hmac2).update('s3').digest();
+
+  return _crypto.default.createHmac('sha256', hmac3).update('aws4_request').digest();
+} // returns the string that needs to be signed
+
+
 function getStringToSign(canonicalRequest, requestDate, region) {
-  if (!(0, _helpersJs.isString)(canonicalRequest)) {
+  if (!(0, _helpers.isString)(canonicalRequest)) {
     throw new TypeError('canonicalRequest should be of type "string"');
   }
-  if (!(0, _helpersJs.isObject)(requestDate)) {
+
+  if (!(0, _helpers.isObject)(requestDate)) {
     throw new TypeError('requestDate should be of type "object"');
   }
-  if (!(0, _helpersJs.isString)(region)) {
+
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
-  var hash = _crypto2['default'].createHash('sha256').update(canonicalRequest).digest('hex');
-  var scope = (0, _helpersJs.getScope)(region, requestDate);
+
+  var hash = _crypto.default.createHash('sha256').update(canonicalRequest).digest('hex');
+
+  var scope = (0, _helpers.getScope)(region, requestDate);
   var stringToSign = [];
   stringToSign.push(signV4Algorithm);
-  stringToSign.push((0, _helpersJs.makeDateLong)(requestDate));
+  stringToSign.push((0, _helpers.makeDateLong)(requestDate));
   stringToSign.push(scope);
   stringToSign.push(hash);
   return stringToSign.join('\n');
-}
+} // calculate the signature of the POST policy
 
-// calculate the signature of the POST policy
 
 function postPresignSignatureV4(region, date, secretKey, policyBase64) {
-  if (!(0, _helpersJs.isString)(region)) {
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
-  if (!(0, _helpersJs.isObject)(date)) {
+
+  if (!(0, _helpers.isObject)(date)) {
     throw new TypeError('date should be of type "object"');
   }
-  if (!(0, _helpersJs.isString)(secretKey)) {
+
+  if (!(0, _helpers.isString)(secretKey)) {
     throw new TypeError('secretKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(policyBase64)) {
+
+  if (!(0, _helpers.isString)(policyBase64)) {
     throw new TypeError('policyBase64 should be of type "string"');
   }
-  var signingKey = getSigningKey(date, region, secretKey);
-  return _crypto2['default'].createHmac('sha256', signingKey).update(policyBase64).digest('hex').toLowerCase();
-}
 
-// Returns the authorization header
+  var signingKey = getSigningKey(date, region, secretKey);
+  return _crypto.default.createHmac('sha256', signingKey).update(policyBase64).digest('hex').toLowerCase();
+} // Returns the authorization header
+
 
 function signV4(request, accessKey, secretKey, region, requestDate) {
-  if (!(0, _helpersJs.isObject)(request)) {
+  if (!(0, _helpers.isObject)(request)) {
     throw new TypeError('request should be of type "object"');
   }
-  if (!(0, _helpersJs.isString)(accessKey)) {
+
+  if (!(0, _helpers.isString)(accessKey)) {
     throw new TypeError('accessKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(secretKey)) {
+
+  if (!(0, _helpers.isString)(secretKey)) {
     throw new TypeError('secretKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(region)) {
+
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
 
   if (!accessKey) {
     throw new errors.AccessKeyRequiredError('accessKey is required for signing');
   }
+
   if (!secretKey) {
     throw new errors.SecretKeyRequiredError('secretKey is required for signing');
   }
 
   var sha256sum = request.headers['x-amz-content-sha256'];
-
   var signedHeaders = getSignedHeaders(request.headers);
   var canonicalRequest = getCanonicalRequest(request.method, request.path, request.headers, signedHeaders, sha256sum);
   var stringToSign = getStringToSign(canonicalRequest, requestDate, region);
   var signingKey = getSigningKey(requestDate, region, secretKey);
   var credential = getCredential(accessKey, region, requestDate);
-  var signature = _crypto2['default'].createHmac('sha256', signingKey).update(stringToSign).digest('hex').toLowerCase();
 
-  return signV4Algorithm + ' Credential=' + credential + ', SignedHeaders=' + signedHeaders.join(';').toLowerCase() + ', Signature=' + signature;
-}
+  var signature = _crypto.default.createHmac('sha256', signingKey).update(stringToSign).digest('hex').toLowerCase();
 
-// returns a presigned URL string
+  return `${signV4Algorithm} Credential=${credential}, SignedHeaders=${signedHeaders.join(';').toLowerCase()}, Signature=${signature}`;
+} // returns a presigned URL string
 
-function presignSignatureV4(request, accessKey, secretKey, region, requestDate, expires) {
-  if (!(0, _helpersJs.isObject)(request)) {
+
+function presignSignatureV4(request, accessKey, secretKey, sessionToken, region, requestDate, expires) {
+  if (!(0, _helpers.isObject)(request)) {
     throw new TypeError('request should be of type "object"');
   }
-  if (!(0, _helpersJs.isString)(accessKey)) {
+
+  if (!(0, _helpers.isString)(accessKey)) {
     throw new TypeError('accessKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(secretKey)) {
+
+  if (!(0, _helpers.isString)(secretKey)) {
     throw new TypeError('secretKey should be of type "string"');
   }
-  if (!(0, _helpersJs.isString)(region)) {
+
+  if (!(0, _helpers.isString)(region)) {
     throw new TypeError('region should be of type "string"');
   }
 
   if (!accessKey) {
     throw new errors.AccessKeyRequiredError('accessKey is required for presigning');
   }
+
   if (!secretKey) {
     throw new errors.SecretKeyRequiredError('secretKey is required for presigning');
   }
 
-  if (!(0, _helpersJs.isNumber)(expires)) {
+  if (!(0, _helpers.isNumber)(expires)) {
     throw new TypeError('expires should be of type "number"');
   }
+
   if (expires < 1) {
     throw new errors.ExpiresParamError('expires param cannot be less than 1 seconds');
   }
+
   if (expires > 604800) {
     throw new errors.ExpiresParamError('expires param cannot be greater than 7 days');
   }
 
-  var iso8601Date = (0, _helpersJs.makeDateLong)(requestDate);
+  var iso8601Date = (0, _helpers.makeDateLong)(requestDate);
   var signedHeaders = getSignedHeaders(request.headers);
   var credential = getCredential(accessKey, region, requestDate);
   var hashedPayload = 'UNSIGNED-PAYLOAD';
-
   var requestQuery = [];
-  requestQuery.push('X-Amz-Algorithm=' + signV4Algorithm);
-  requestQuery.push('X-Amz-Credential=' + (0, _helpersJs.uriEscape)(credential));
-  requestQuery.push('X-Amz-Date=' + iso8601Date);
-  requestQuery.push('X-Amz-Expires=' + expires);
-  requestQuery.push('X-Amz-SignedHeaders=' + (0, _helpersJs.uriEscape)(signedHeaders.join(';').toLowerCase()));
+  requestQuery.push(`X-Amz-Algorithm=${signV4Algorithm}`);
+  requestQuery.push(`X-Amz-Credential=${(0, _helpers.uriEscape)(credential)}`);
+  requestQuery.push(`X-Amz-Date=${iso8601Date}`);
+  requestQuery.push(`X-Amz-Expires=${expires}`);
+  requestQuery.push(`X-Amz-SignedHeaders=${(0, _helpers.uriEscape)(signedHeaders.join(';').toLowerCase())}`);
+
+  if (sessionToken) {
+    requestQuery.push(`X-Amz-Security-Token=${sessionToken}`);
+  }
 
   var resource = request.path.split('?')[0];
   var query = request.path.split('?')[1];
+
   if (query) {
     query = query + '&' + requestQuery.join('&');
   } else {
@@ -295,13 +319,13 @@ function presignSignatureV4(request, accessKey, secretKey, region, requestDate, 
   }
 
   var path = resource + '?' + query;
-
   var canonicalRequest = getCanonicalRequest(request.method, path, request.headers, signedHeaders, hashedPayload);
-
   var stringToSign = getStringToSign(canonicalRequest, requestDate, region);
   var signingKey = getSigningKey(requestDate, region, secretKey);
-  var signature = _crypto2['default'].createHmac('sha256', signingKey).update(stringToSign).digest('hex').toLowerCase();
-  var presignedUrl = request.protocol + '//' + request.headers.host + path + ('&X-Amz-Signature=' + signature);
+
+  var signature = _crypto.default.createHmac('sha256', signingKey).update(stringToSign).digest('hex').toLowerCase();
+
+  var presignedUrl = request.protocol + '//' + request.headers.host + path + `&X-Amz-Signature=${signature}`;
   return presignedUrl;
 }
 //# sourceMappingURL=signing.js.map

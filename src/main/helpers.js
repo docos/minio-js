@@ -1,5 +1,5 @@
 /*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ export function promisify(fn) {
 // Reference https://tools.ietf.org/html/rfc3986#section-2.2
 export function uriEscape(string) {
   return string.split('').reduce((acc, elem) => {
-    let buf = new Buffer(elem)
+    let buf = Buffer.from(elem)
     if (buf.length === 1) {
       // length 1 indicates that elem is not a unicode character.
       // Check if it is an unreserved characer.
@@ -245,6 +245,11 @@ export function isArray(arg) {
   return Array.isArray(arg)
 }
 
+// check if arg is a valid date
+export function isValidDate(arg) {
+  return arg instanceof Date && !isNaN(arg)
+}
+
 // Create a Date string with format:
 // 'YYYYMMDDTHHmmss' + Z
 export function makeDateLong(date) {
@@ -291,6 +296,22 @@ export function readableStream(data) {
   s.push(null)
   return s
 }
+
+// Process metadata to insert appropriate value to `content-type` attribute
+export function insertContentType(metaData, filePath) {
+  // check if content-type attribute present in metaData
+  for (var key in metaData) {
+    if (key.toLowerCase() === 'content-type') {
+      return metaData
+    }
+  }
+  // if `content-type` attribute is not present in metadata,
+  // then infer it from the extension in filePath
+  var newMetadata = Object.assign({}, metaData)
+  newMetadata['content-type'] = probeContentType(filePath)
+  return newMetadata
+}
+
 // Function prepends metadata with the appropriate prefix if it is not already on
 export function prependXAMZMeta(metaData) {
   var newMetadata = Object.assign({}, metaData)

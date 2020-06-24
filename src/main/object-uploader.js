@@ -1,5 +1,5 @@
 ﻿/*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,6 +197,9 @@ export default class ObjectUploader extends Transform {
         etag = etag.replace(/^"/, '').replace(/"$/, '')
 
       this.etags.push({part: partNumber, etag})
+
+      // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
+      response.on('data', () => {})
 
       // We're ready for the next chunk.
       callback()

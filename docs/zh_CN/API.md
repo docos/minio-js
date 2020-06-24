@@ -1,14 +1,14 @@
-# JavaScript Client API参考文档 [![Slack](https://slack.minio.io/slack?type=svg)](https://slack.minio.io)
+# JavaScript Client API参考文档 [![Slack](https://slack.min.io/slack?type=svg)](https://slack.min.io)
 
 ## 初使化Minio Client object.
 
-## Minio
+## MinIO
 
 ```js
 var Minio = require('minio')
 
 var minioClient = new Minio.Client({
-    endPoint: 'play.minio.io',
+    endPoint: 'play.min.io',
     port: 9000,
   	useSSL: true,
     accessKey: 'Q3AM3UQ867SPQQA43P2F',
@@ -61,6 +61,9 @@ __参数__
 |`secretKey`  |  _string_   | secretKey是你账户的密码。|
 |`useSSL`    | _bool_    |如果是true，则用的是https而不是http,默认值是true。 |
 |`region`    | _string_  |设置该值以覆盖自动发现存储桶region。（可选）|
+|`transport`    | _string_  |Set this value to pass in a custom transport. (Optional) - To be translated |
+|`sessionToken`    | _string_  |Set this value to provide x-amz-security-token (AWS S3 specific). (Optional) - To be translated|
+|`partSize`    | _number_  |Set this value to override default part size of 64MB for multipart uploads. (Optional) - To be translated|
 
 
 __示例__
@@ -71,7 +74,7 @@ __示例__
 var Minio = require('minio')
 
 var minioClient = new Minio.Client({
-    endPoint: 'play.minio.io',
+    endPoint: 'play.min.io',
     port: 9000,
     useSSL: true,
     accessKey: 'Q3AM3UQ867SPQQA43P2F',
@@ -876,18 +879,18 @@ __示例__
 
 ```js
 // Create a new notification object
-var bucketNotification = new Notify.BucketNotification();
+var bucketNotification = new Minio.NotificationConfig();
 
-// Setup a new topic configuration
-var arn = Notify.newARN('aws', 'sns', 'us-west-2', '408065449417', 'TestTopic')
-var topic = new Notify.TopicConfig(arn)
-topic.addFilterSuffix('.jpg')
-topic.addFilterPrefix('myphotos/')
-topic.addEvent(Notify.ObjectReducedRedundancyLostObject)
-topic.addEvent(Notify.ObjectCreatedAll)
+// Setup a new Queue configuration
+var arn = Minio.buildARN('aws', 'sqs', 'us-west-2', '1', 'webhook')
+var queue = new Minio.QueueConfig(arn)
+queue.addFilterSuffix('.jpg')
+queue.addFilterPrefix('myphotos/')
+queue.addEvent(Minio.ObjectReducedRedundancyLostObject)
+queue.addEvent(Minio.ObjectCreatedAll)
 
-// Add the topic to the overall notification object
-bucketNotification.addTopicConfiguration(topic)
+// Add the queue to the overall notification object
+bucketNotification.add(queue)
 
 minioClient.setBucketNotification('mybucket', bucketNotification, function(err) {
   if (err) return console.log(err)
@@ -1002,4 +1005,4 @@ minioClient.setBucketPolicy('my-bucketname', 'img-', minio.Policy.READONLY, func
 ## 6. 了解更多
 
 
-- [创建属于你的购物APP示例](https://docs.minio.io/docs/javascript-shopping-app)
+- [创建属于你的购物APP示例](https://github.com/minio/minio-js-store-app)

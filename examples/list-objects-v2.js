@@ -1,5 +1,5 @@
 /*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ var s3Client = new Minio.Client({
   secretKey: 'YOUR-SECRETACCESSKEY'
 })
 // List all object paths in bucket my-bucketname.
-var objectsStream = s3Client.listObjectsV2('my-bucketname', '', true)
+var objectsStream = s3Client.listObjectsV2('my-bucketname', '', true,'')
 objectsStream.on('data', function(obj) {
   console.log(obj)
 })

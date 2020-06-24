@@ -1,5 +1,5 @@
 /*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,7 +220,7 @@ export function signV4(request, accessKey, secretKey, region, requestDate) {
 }
 
 // returns a presigned URL string
-export function presignSignatureV4(request, accessKey, secretKey, region, requestDate, expires) {
+export function presignSignatureV4(request, accessKey, secretKey, sessionToken, region, requestDate, expires) {
   if (!isObject(request)) {
     throw new TypeError('request should be of type "object"')
   }
@@ -262,6 +262,9 @@ export function presignSignatureV4(request, accessKey, secretKey, region, reques
   requestQuery.push(`X-Amz-Date=${iso8601Date}`)
   requestQuery.push(`X-Amz-Expires=${expires}`)
   requestQuery.push(`X-Amz-SignedHeaders=${uriEscape(signedHeaders.join(';').toLowerCase())}`)
+  if (sessionToken) {
+    requestQuery.push(`X-Amz-Security-Token=${sessionToken}`)
+  }
 
   var resource = request.path.split('?')[0]
   var query = request.path.split('?')[1]

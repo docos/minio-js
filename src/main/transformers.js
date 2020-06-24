@@ -1,5 +1,5 @@
 /*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015, 2016 Minio, Inc.
+ * MinIO Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2015, 2016 MinIO, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,6 +186,11 @@ export function getListObjectsTransformer() {
 // Parses listObjects response.
 export function getListObjectsV2Transformer() {
   return getConcater(xmlParsers.parseListObjectsV2)
+}
+
+// Parses listObjects with metadata response.
+export function getListObjectsV2WithMetadataTransformer() {
+  return getConcater(xmlParsers.parseListObjectsV2WithMetadata)
 }
 
 // Parses completeMultipartUpload response.

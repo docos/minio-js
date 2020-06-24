@@ -1,300 +1,286 @@
-/*
- * Minio Javascript Library for Amazon S3 Compatible Cloud Storage, (C) 2016 Minio, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+"use strict";
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = void 0;
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _stream = require("stream");
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _crypto = _interopRequireDefault(require("crypto"));
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+var querystring = _interopRequireWildcard(require("querystring"));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var _stream = require('stream');
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _crypto = require('crypto');
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
 
-var _crypto2 = _interopRequireDefault(_crypto);
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var _querystring = require('querystring');
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
-var querystring = _interopRequireWildcard(_querystring);
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+
+function _possibleConstructorReturn(self, call) { if (call && (typeof call === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 // We extend Transform because Writable does not implement ._flush().
-
-var ObjectUploader = (function (_Transform) {
+var ObjectUploader = /*#__PURE__*/function (_Transform) {
   _inherits(ObjectUploader, _Transform);
 
+  var _super = _createSuper(ObjectUploader);
+
   function ObjectUploader(client, bucketName, objectName, partSize, metaData, callback) {
+    var _this;
+
     _classCallCheck(this, ObjectUploader);
 
-    _get(Object.getPrototypeOf(ObjectUploader.prototype), 'constructor', this).call(this);
-    this.emptyStream = true;
-    this.client = client;
-    this.bucketName = bucketName;
-    this.objectName = objectName;
-    // The size of each multipart, chunked by BlockStream2.
-    this.partSize = partSize;
-    // This is the metadata for the object.
-    this.metaData = metaData;
+    _this = _super.call(this);
+    _this.emptyStream = true;
+    _this.client = client;
+    _this.bucketName = bucketName;
+    _this.objectName = objectName; // The size of each multipart, chunked by BlockStream2.
 
-    // Call like: callback(error, etag).
-    this.callback = callback;
+    _this.partSize = partSize; // This is the metadata for the object.
 
-    // We need to keep track of what number chunk/part we're on. This increments
+    _this.metaData = metaData; // Call like: callback(error, etag).
+
+    _this.callback = callback; // We need to keep track of what number chunk/part we're on. This increments
     // each time _write() is called. Starts with 1, not 0.
-    this.partNumber = 1;
 
-    // A list of the previously uploaded chunks, for resuming a file upload. This
+    _this.partNumber = 1; // A list of the previously uploaded chunks, for resuming a file upload. This
     // will be null if we aren't resuming an upload.
-    this.oldParts = null;
 
-    // Keep track of the etags for aggregating the chunks together later. Each
+    _this.oldParts = null; // Keep track of the etags for aggregating the chunks together later. Each
     // etag represents a single chunk of the file.
-    this.etags = [];
 
-    // This is for the multipart upload request — if null, we're either not initiated
+    _this.etags = []; // This is for the multipart upload request — if null, we're either not initiated
     // yet or we're flushing in one packet.
-    this.id = null;
 
-    // Handle errors.
-    this.on('error', function (err) {
+    _this.id = null; // Handle errors.
+
+    _this.on('error', function (err) {
       callback(err);
     });
+
+    return _this;
   }
 
   _createClass(ObjectUploader, [{
-    key: '_transform',
+    key: "_transform",
     value: function _transform(chunk, encoding, callback) {
-      var _this = this;
+      var _this2 = this;
 
       this.emptyStream = false;
       var method = 'PUT';
-      var headers = Object.assign({}, this.metaData, { 'Content-Length': chunk.length });
-      var md5digest = '';
-
-      // Calculate and set Content-MD5 header if SHA256 is not set.
+      var headers = Object.assign({}, this.metaData, {
+        'Content-Length': chunk.length
+      });
+      var md5digest = ''; // Calculate and set Content-MD5 header if SHA256 is not set.
       // This will happen only when there is a secure connection to the s3 server.
+
       if (!this.client.enableSHA256) {
-        md5digest = _crypto2['default'].createHash('md5').update(chunk).digest();
+        md5digest = _crypto.default.createHash('md5').update(chunk).digest();
         headers['Content-MD5'] = md5digest.toString('base64');
-      }
-      // We can flush the object in one packet if it fits in one chunk. This is true
+      } // We can flush the object in one packet if it fits in one chunk. This is true
       // if the chunk size is smaller than the part size, signifying the end of the
       // stream.
+
+
       if (this.partNumber == 1 && chunk.length < this.partSize) {
         // PUT the chunk in a single request — use an empty query.
         var _options = {
-          method: method, headers: headers,
+          method,
+          headers,
           query: '',
           bucketName: this.bucketName,
           objectName: this.objectName
         };
-
         this.client.makeRequest(_options, chunk, 200, '', true, function (err, response) {
           if (err) return callback(err);
-
           var etag = response.headers.etag;
+
           if (etag) {
             etag = etag.replace(/^"/, '').replace(/"$/, '');
-          }
+          } // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
 
-          // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
-          response.on('data', function () {});
 
-          // Give the etag back, we're done!
+          response.on('data', function () {}); // Give the etag back, we're done!
 
           process.nextTick(function () {
-            _this.callback(null, etag);
-          });
+            _this2.callback(null, etag);
+          }); // Because we're sure the stream has ended, allow it to flush and end.
 
-          // Because we're sure the stream has ended, allow it to flush and end.
           callback();
         });
-
         return;
-      }
-
-      // If we aren't flushing in one packet, we need to initiate the multipart upload,
+      } // If we aren't flushing in one packet, we need to initiate the multipart upload,
       // if it hasn't already been done. The write will be buffered until the upload has been
       // initiated.
+
+
       if (this.id === null) {
         this.once('ready', function () {
-          _this._transform(chunk, encoding, callback);
-        });
+          _this2._transform(chunk, encoding, callback);
+        }); // Check for an incomplete previous upload.
 
-        // Check for an incomplete previous upload.
         this.client.findUploadId(this.bucketName, this.objectName, function (err, id) {
-          if (err) return _this.emit('error', err);
+          if (err) return _this2.emit('error', err); // If no upload ID exists, initiate a new one.
 
-          // If no upload ID exists, initiate a new one.
           if (!id) {
-            _this.client.initiateNewMultipartUpload(_this.bucketName, _this.objectName, _this.metaData, function (err, id) {
+            _this2.client.initiateNewMultipartUpload(_this2.bucketName, _this2.objectName, _this2.metaData, function (err, id) {
               if (err) return callback(err);
+              _this2.id = id; // We are now ready to accept new chunks — this will flush the buffered chunk.
 
-              _this.id = id;
-
-              // We are now ready to accept new chunks — this will flush the buffered chunk.
-              _this.emit('ready');
+              _this2.emit('ready');
             });
 
             return;
           }
 
-          _this.id = id;
+          _this2.id = id; // Retrieve the pre-uploaded parts, if we need to resume the upload.
 
-          // Retrieve the pre-uploaded parts, if we need to resume the upload.
-          _this.client.listParts(_this.bucketName, _this.objectName, id, function (err, etags) {
-            if (err) return _this.emit('error', err);
+          _this2.client.listParts(_this2.bucketName, _this2.objectName, id, function (err, etags) {
+            if (err) return _this2.emit('error', err); // It is possible for no parts to be already uploaded.
 
-            // It is possible for no parts to be already uploaded.
-            if (!etags) etags = [];
+            if (!etags) etags = []; // oldParts will become an object, allowing oldParts[partNumber].etag
 
-            // oldParts will become an object, allowing oldParts[partNumber].etag
-            _this.oldParts = etags.reduce(function (prev, item) {
+            _this2.oldParts = etags.reduce(function (prev, item) {
               if (!prev[item.part]) {
                 prev[item.part] = item;
               }
+
               return prev;
             }, {});
 
-            _this.emit('ready');
+            _this2.emit('ready');
           });
         });
-
         return;
-      }
+      } // Continue uploading various parts if we have initiated multipart upload.
 
-      // Continue uploading various parts if we have initiated multipart upload.
-      var partNumber = this.partNumber++;
 
-      // Check to see if we've already uploaded this chunk. If the hash sums match,
+      var partNumber = this.partNumber++; // Check to see if we've already uploaded this chunk. If the hash sums match,
       // we can skip to the next chunk.
-      if (this.oldParts) {
-        var oldPart = this.oldParts[partNumber];
 
-        //Calulcate the md5 hash, if it has not already been calculated.
+      if (this.oldParts) {
+        var oldPart = this.oldParts[partNumber]; //Calulcate the md5 hash, if it has not already been calculated.
+
         if (!md5digest) {
-          md5digest = _crypto2['default'].createHash('md5').update(chunk).digest();
+          md5digest = _crypto.default.createHash('md5').update(chunk).digest();
         }
 
         if (oldPart && md5digest.toString('hex') === oldPart.etag) {
           // The md5 matches, the chunk has already been uploaded.
-          this.etags.push({ part: partNumber, etag: oldPart.etag });
-
+          this.etags.push({
+            part: partNumber,
+            etag: oldPart.etag
+          });
           callback();
           return;
         }
-      }
+      } // Write the chunk with an uploader.
 
-      // Write the chunk with an uploader.
+
       var query = querystring.stringify({
         partNumber: partNumber,
         uploadId: this.id
       });
-
       var options = {
-        method: method, query: query, headers: headers,
+        method,
+        query,
+        headers,
         bucketName: this.bucketName,
         objectName: this.objectName
       };
-
       this.client.makeRequest(options, chunk, 200, '', true, function (err, response) {
-        if (err) return callback(err);
+        if (err) return callback(err); // In order to aggregate the parts together, we need to collect the etags.
 
-        // In order to aggregate the parts together, we need to collect the etags.
         var etag = response.headers.etag;
         if (etag) etag = etag.replace(/^"/, '').replace(/"$/, '');
 
-        _this.etags.push({ part: partNumber, etag: etag });
+        _this2.etags.push({
+          part: partNumber,
+          etag
+        }); // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
 
-        // We're ready for the next chunk.
+
+        response.on('data', function () {}); // We're ready for the next chunk.
+
         callback();
       });
     }
   }, {
-    key: '_flush',
+    key: "_flush",
     value: function _flush(callback) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (this.emptyStream) {
         var method = 'PUT';
-        var headers = Object.assign({}, this.metaData, { 'Content-Length': 0 });
+        var headers = Object.assign({}, this.metaData, {
+          'Content-Length': 0
+        });
         var options = {
-          method: method, headers: headers,
+          method,
+          headers,
           query: '',
           bucketName: this.bucketName,
           objectName: this.objectName
         };
-
         this.client.makeRequest(options, '', 200, '', true, function (err, response) {
           if (err) return callback(err);
-
           var etag = response.headers.etag;
+
           if (etag) {
             etag = etag.replace(/^"/, '').replace(/"$/, '');
-          }
+          } // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
 
-          // Ignore the 'data' event so that the stream closes. (nodejs stream requirement)
-          response.on('data', function () {});
 
-          // Give the etag back, we're done!
+          response.on('data', function () {}); // Give the etag back, we're done!
+
           process.nextTick(function () {
-            _this2.callback(null, etag);
-          });
+            _this3.callback(null, etag);
+          }); // Because we're sure the stream has ended, allow it to flush and end.
 
-          // Because we're sure the stream has ended, allow it to flush and end.
           callback();
         });
-
         return;
-      }
-      // If it has been uploaded in a single packet, we don't have to do anything.
+      } // If it has been uploaded in a single packet, we don't have to do anything.
+
+
       if (this.id === null) {
         return;
-      }
-
-      // This is called when all of the chunks uploaded successfully, thus
+      } // This is called when all of the chunks uploaded successfully, thus
       // completing the multipart upload.
+
+
       this.client.completeMultipartUpload(this.bucketName, this.objectName, this.id, this.etags, function (err, etag) {
-        if (err) return callback(err);
-
-        // Call our callback on the next tick to allow the streams infrastructure
+        if (err) return callback(err); // Call our callback on the next tick to allow the streams infrastructure
         // to finish what its doing before we continue.
-        process.nextTick(function () {
-          _this2.callback(null, etag);
-        });
 
+        process.nextTick(function () {
+          _this3.callback(null, etag);
+        });
         callback();
       });
     }
   }]);
 
   return ObjectUploader;
-})(_stream.Transform);
+}(_stream.Transform);
 
-exports['default'] = ObjectUploader;
-module.exports = exports['default'];
+exports.default = ObjectUploader;
 //# sourceMappingURL=object-uploader.js.map
